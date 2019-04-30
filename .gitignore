@@ -62,3 +62,4 @@ typings/
 
 .tmp
 .DS_Store
+.vscode/ipch
