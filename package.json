@@ -5,7 +5,8 @@
   "scripts": {
     "clean": "rm -rf ./dist && rm -rf ./pdf",
     "serve": "node_modules/backslide/bin/bs s src",
-    "build": "node_modules/backslide/bin/bs e src && node_modules/backslide/bin/bs p src"
+    "build": "node_modules/backslide/bin/bs e src && node_modules/backslide/bin/bs p src",
+    "reset": "rm -rf ./dist && rm -rf ./pdf && rm -rf template && rm -rf ./src && mkdir ./src && node_modules/backslide/bin/bs init --template && mv ./presentation.md ./src/presentation.md"
   },
   "repository": {
     "type": "git",
