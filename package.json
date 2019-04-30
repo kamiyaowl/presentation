@@ -1,0 +1,23 @@
+{
+  "name": "presentation",
+  "version": "1.0.0",
+  "description": "My Presentation",
+  "scripts": {
+    "clean": "rm -rf ./dist && rm -rf ./pdf",
+    "serve": "node_modules/backslide/bin/bs s src",
+    "build": "node_modules/backslide/bin/bs e src && node_modules/backslide/bin/bs p src"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/kamiyaowl/presentation.git"
+  },
+  "author": "kamiyaowl",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/kamiyaowl/presentation/issues"
+  },
+  "homepage": "https://github.com/kamiyaowl/presentation#readme",
+  "devDependencies": {
+    "backslide": "^2.3.4"
+  }
+}
