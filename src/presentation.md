@@ -1,4 +1,4 @@
-title: My Presentation
+title: Backslide Sample Presentation
 class: animation-fade
 layout: true
 
