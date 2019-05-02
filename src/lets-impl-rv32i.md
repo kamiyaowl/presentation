@@ -780,7 +780,7 @@ background-image: url(https://pbs.twimg.com/media/D5frnDjVUAA0-gz.jpg:large)
 
 * [riscv.org](https://riscv.org/)
 * [riscv/riscv-isa-manual - Github](https://github.com/riscv/riscv-isa-manual)
-* [RISC-V原典 日経BP社 オープンアーキテクチャのススメ](https://www.nikkeibp.co.jp/atclpubmkt/book/18/269170/)
+* [RISC-V原典 オープンアーキテクチャのススメ: 日経BP社](https://www.nikkeibp.co.jp/atclpubmkt/book/18/269170/)
   * 著: デイビッド・パターソン
   * 著: アンドリュー・ウォーターマン
   * 訳: 成田 光影
