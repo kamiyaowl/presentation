@@ -17,6 +17,15 @@ class: impact
 
 ---
 
+# 作ったもの
+
+* rv32iのエミュレータをc++で書きました
+  * https://github.com/kamiyaowl/rv32i-sim
+
+![preview](https://camo.githubusercontent.com/d5c09b95671b83d619b1bcde82b4384dc38557b3/68747470733a2f2f7062732e7477696d672e636f6d2f6d656469612f44356834516d755773414d484f486a2e6a70673a6c61726765)
+
+---
+
 # RISC-V の特徴
 
 ## オープンな命令セット(ISA)
@@ -335,6 +344,7 @@ Instクラスの実行は、命令のパース→`this->process`に丸投げ
 命令種類ごとに共通処理をラップ。`p: func<DATA(DATA)>`などを外から指定する
 
 ```cpp
+inline Inst<DATA, ADDR> alu_32i_s_inst(string name, /* 中略 */ ...) {
 return Inst<DATA, ADDR>(
     name,0b0100011,funct3,0x0,ImmType::S,
     [&](Reg<DATA>& reg, Mem<DATA, ADDR>& mem, const Args args) {
@@ -350,17 +360,70 @@ return Inst<DATA, ADDR>(
 
 # 命令>実装
 
-### Instクラスの実行は、命令のパース→`this->process`に丸投げ
+先程のラップした関数で、同一`opcode`の命令を実装。`instructions`として定義
+
+```cpp
+using S    = int32_t;
+using ADDR = uint32_t;
+alu_32i_r_inst<S, ADDR>(
+  "add",
+  0b000,
+  0b0000000,
+  [](S a, S b) { return a + b; }
+),
+```
+
+ラムダ式は最高だ
+
 ---
 
 # 命令>実装
 
-### Instクラスの実行は、命令のパース→`this->process`に丸投げ
+そして`funct3/7`で量産します。(uintの明示が必要なところは`static_cast<U>`で)
+
+```cpp
+"add"   , 0b000, 0b0000000, [](S a, S b) { return a + b; }),
+"sub"   , 0b000, 0b0100000, [](S a, S b) { return a - b; }),
+"sll"   , 0b001, 0b0000000, [](S a, S b) { assert(b > -1); return static_cast<U>(a) << b; }),
+"slt"   , 0b010, 0b0000000, [](S a, S b) { return a < b ? 0x1 : 0x0; }),
+"sltu"  , 0b011, 0b0000000, [](S a, S b) { return static_cast<U>(a) < static_cast<U>(b) ? 0x1 : 0x0; }),
+"xor"   , 0b100, 0b0000000, [](S a, S b) { return static_cast<U>(a) ^ static_cast<U>(b); }),
+"srl"   , 0b101, 0b0000000, [](S a, S b) { assert(b > -1); return static_cast<U>(a) >> b; }),
+"sra"   , 0b101, 0b0100000, [](S a, S b) { assert(b > -1); return a >> b; }),
+"or"    , 0b110, 0b0000000, [](S a, S b) { return static_cast<U>(a) | static_cast<U>(b); }),
+"and"   , 0b111, 0b0000000, [](S a, S b) { return static_cast<U>(a) & static_cast<U>(b); }),
+
+```
+
+
 ---
 
 # 命令>実装
 
-### Instクラスの実行は、命令のパース→`this->process`に丸投げ
+`jalr`などは、`imm`を符号拡張する必要があるので次のようにしてある。
+
+`imm_signed`は符号拡張済なので、`int32_t`同士の演算になっている。
+
+```cpp
+"jalr", 0b1100111, 0x0, 0x0, ImmType::I,
+[](Reg<S>& reg, Mem<S, ADDR>& mem, const Args args) {
+    reg.write(args.rd, reg.read_pc() + reg.get_pc_offset());
+
+    S rs1 = reg.read(args.rs1);
+    S dst = rs1 + args.imm_signed;
+    reg.write_pc(dst);
+}
+```
+---
+
+class: impact
+
+## 他
+### Mem, ELF Loader, バイナリ生成など
+
+---
+
+
 ---
 
 # 引用
