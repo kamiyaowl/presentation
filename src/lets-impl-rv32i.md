@@ -35,10 +35,11 @@ class: impact
 ---
 
 # 実装目標: *"Hello RISC-V!"*を出力できる
-### Cで書いたコードのコンパイル生成物を実行する
+
+Cで書いたコードのコンパイル生成物を実行する
 
 * 命令セット: ***rv32i***
-    * ***i***: 基本整数命令のみを実装 (M, F, D, A, C, V, ...などいろいろあるが)
+    * ***i***: 基本整数命令のみを実装 (他色々は一切無視)
 
 --
 
@@ -75,7 +76,7 @@ class: impact
 
 # レジスタ>実装
 
-### std::vectorで管理
+std::vectorで管理
 
 ```c
 class Reg {
@@ -94,7 +95,7 @@ class Reg {
 
 # レジスタ>実装
 
-### レジスタとPCへの読み書きと、PCのインクリメントを実装
+レジスタとPCへの読み書きと、PCのインクリメントを実装
 
 ```c
 T    read(uint8_t addr);
@@ -115,15 +116,42 @@ class: impact
 
 ---
 
-# 命令デコーダ>命令の形式
+# 命令デコーダ>形式
 
-### 基本整数命令には6種類に分けられる
+基本整数命令には6種類に分けられる
 
 ![base_inst](https://raw.githubusercontent.com/kamiyaowl/presentation/master/src/assets/riscv-base-inst.png)
 
 ---
 
-# 命令デコーダ>命令分岐順序
+# 命令デコーダ>形式
+
+* `opcode`, `funct3`, `funct7`
+  * 命令の種類判別に使う
+
+
+--
+
+* `rs1`, `rs2`: Register Source
+  * 計算の元データを読み込むレジスタを指定(`x[0]` ~ `x[31]`)
+
+
+--
+
+* `imm`: Immediate
+  * 計算に使用する即値
+  * 命令によってビット幅が異なったり、符号拡張が必要だったりする
+
+
+--
+
+* `rd`: Register Destination
+  * 計算結果(など)を格納するレジスタを指定
+  * `pc`は参照できない、`x[0]`を指定したら結果は捨てる
+
+---
+
+# 命令デコーダ>分岐順序
 
 ## 命令の決定
 
@@ -162,7 +190,7 @@ std::copy_if(
 
 # 命令デコーダ>実装
 
-### フィールドの分解は命令が決まれば、読み方が確定する
+フィールドの分解は命令が決まれば、読み方が確定する
 
 ```c
 case ImmType::S:
@@ -182,7 +210,7 @@ case ImmType::S:
 
 # 命令デコーダ>実装(符号拡張)
 
-### 即値(imm)はsignedとして演算に使う必要があるので、計算しておく
+### 即値(imm)はsignedとして演算に使う場合があるので、計算しておく
 
 `imm`: 即値の値, `bit_width`: `imm`のデータ幅
 
@@ -196,9 +224,144 @@ int32_t convert_signed(uint32_t imm, size_t bit_width)
 }
 ```
 
+
 ---
 
+class: impact
 
+## 命令の実装
+
+---
+
+# 命令>種類と概要
+
+* (R-Type) レジスタ-レジスタ間演算: `0b0110011` 
+  * [`rs1`, `rs2`]で計算をして、`rd`に結果を書き込み
+
+
+--
+
+* (I-Type) レジスタ-即値間演算: `0b0010011` 
+  * [`rs1`, `imm`]で計算をして、`rd`に結果を書き込み
+
+
+--
+
+* (S-Type) Store: `0b0100011` 
+  * Memのアドレス(`rs1`+`signed(imm)`)に`rs2`を加工(byte mask等)して書き込み
+
+
+--
+
+* (I-Type) Load: `0b0000011` 
+  * Memのアドレス(`rs1`+`signed(imm)`)から読み出し、加工して`rd`に書き込み
+
+
+---
+
+# 命令>種類と概要
+
+* (B-Type) Branch: `0b1100011` 
+  * [`rs1`, `rs2`]が特定の条件を満たしたら、`pc`に`pc`+`signed(imm)`を設定
+
+
+--
+
+* (I-Type) jalr: `0b1100111` 
+  * `rd`に`pc + 4`を書き込み, `pc`に`rs1`+`signed(imm)`を設定
+
+
+--
+
+* (J-Type) jal: `0b1101111` 
+  * `rd`に`pc + 4`を書き込み, `pc`に`pc`+`signed(imm)`を設定
+
+
+--
+
+* (U-Type) auipc: `0b0010111` 
+  * `rd`に`pc`+`signed(imm)`を設定
+
+---
+
+# 命令>種類と概要
+
+
+* (U-Type) lui: `0b0110111` 
+  * `rd`に`imm`を設定
+
+
+---
+
+# 命令>実装
+
+Instクラスを定義, 実際の処理はprocessに委譲
+
+```cpp
+template<typename DATA, typename ADDR>
+class Inst {
+    public:
+        string name;
+        uint8_t opcode;
+        uint8_t funct3;
+        uint8_t funct7;
+        ImmType immType;
+        function<Process<DATA, ADDR>> process;
+
+```
+
+---
+
+# 命令>実装
+
+Instクラスの実行は、命令のパース→`this->process`に丸投げ
+
+* `parse_args`: 先程実装した命令デコードする関数
+* `args`に`rs1,rs2,rd,imm, ...`情報が入っている
+
+```cpp
+    void run(Reg<DATA>& reg, Mem<DATA, ADDR>& mem, DATA inst) {
+        Args args;
+        parse_args(inst, this->immType, args);
+        this->process(reg, mem, args);
+    }
+}
+```
+
+---
+
+# 命令>実装
+
+命令種類ごとに共通処理をラップ。`p: func<DATA(DATA)>`などを外から指定する
+
+```cpp
+return Inst<DATA, ADDR>(
+    name,0b0100011,funct3,0x0,ImmType::S,
+    [&](Reg<DATA>& reg, Mem<DATA, ADDR>& mem, const Args args) {
+        ADDR addr = reg.read(args.rs1) + args.imm_signed;
+        DATA data = p(reg.read(args.rs2));
+
+        mem.write(addr, data);
+        reg.incr_pc();
+    }
+);
+```
+---
+
+# 命令>実装
+
+### Instクラスの実行は、命令のパース→`this->process`に丸投げ
+---
+
+# 命令>実装
+
+### Instクラスの実行は、命令のパース→`this->process`に丸投げ
+---
+
+# 命令>実装
+
+### Instクラスの実行は、命令のパース→`this->process`に丸投げ
+---
 
 # 引用
 
