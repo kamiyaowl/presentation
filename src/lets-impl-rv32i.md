@@ -141,23 +141,11 @@ class: impact
 
 * `opcode`, `funct3`, `funct7`
   * 命令の種類判別に使う
-
-
---
-
 * `rs1`, `rs2`: Register Source
   * 計算の元データを読み込むレジスタを指定(`x[0]` ~ `x[31]`)
-
-
---
-
 * `imm`: Immediate
   * 計算に使用する即値
   * 命令によってビット幅が異なったり、符号拡張が必要だったりする
-
-
---
-
 * `rd`: Register Destination
   * 計算結果(など)を格納するレジスタを指定
   * `pc`は参照できない、`x[0]`を指定したら結果は捨てる
@@ -352,7 +340,7 @@ Instクラスの実行は、命令のパース→`this->process`に丸投げ
 inline Inst<DATA, ADDR> alu_32i_s_inst(string name, /* 中略 */ ...) {
 return Inst<DATA, ADDR>(
     name,0b0100011,funct3,0x0,ImmType::S,
-    [&](Reg<DATA>& reg, Mem<DATA, ADDR>& mem, const Args args) {
+    [&] (Reg<DATA>& reg, Mem<DATA, ADDR>& mem, const Args args) {
         ADDR addr = reg.read(args.rs1) + args.imm_signed;
         DATA data = p(reg.read(args.rs2));
 
@@ -374,7 +362,7 @@ alu_32i_r_inst<S, ADDR>(
   "add",
   0b000,
   0b0000000,
-  [](S a, S b) { return a + b; }
+  [] (S a, S b) { return a + b; }
 ),
 ```
 
@@ -387,16 +375,16 @@ alu_32i_r_inst<S, ADDR>(
 同じ手順で他の命令も作成(uintの明示が必要なところは`static_cast<U>`で)
 
 ```cpp
-"add"   , 0b000, 0b0000000, [](S a, S b) { return a + b; }),
-"sub"   , 0b000, 0b0100000, [](S a, S b) { return a - b; }),
-"sll"   , 0b001, 0b0000000, [](S a, S b) { assert(b > -1); return static_cast<U>(a) << b; }),
-"slt"   , 0b010, 0b0000000, [](S a, S b) { return a < b ? 0x1 : 0x0; }),
-"sltu"  , 0b011, 0b0000000, [](S a, S b) { return static_cast<U>(a) < static_cast<U>(b) ? 0x1 : 0x0; }),
-"xor"   , 0b100, 0b0000000, [](S a, S b) { return static_cast<U>(a) ^ static_cast<U>(b); }),
-"srl"   , 0b101, 0b0000000, [](S a, S b) { assert(b > -1); return static_cast<U>(a) >> b; }),
-"sra"   , 0b101, 0b0100000, [](S a, S b) { assert(b > -1); return a >> b; }),
-"or"    , 0b110, 0b0000000, [](S a, S b) { return static_cast<U>(a) | static_cast<U>(b); }),
-"and"   , 0b111, 0b0000000, [](S a, S b) { return static_cast<U>(a) & static_cast<U>(b); }),
+"add"   , 0b000, 0b0000000, [] (S a, S b) { return a + b; }),
+"sub"   , 0b000, 0b0100000, [] (S a, S b) { return a - b; }),
+"sll"   , 0b001, 0b0000000, [] (S a, S b) { assert(b > -1); return static_cast<U>(a) << b; }),
+"slt"   , 0b010, 0b0000000, [] (S a, S b) { return a < b ? 0x1 : 0x0; }),
+"sltu"  , 0b011, 0b0000000, [] (S a, S b) { return static_cast<U>(a) < static_cast<U>(b) ? 0x1 : 0x0; }),
+"xor"   , 0b100, 0b0000000, [] (S a, S b) { return static_cast<U>(a) ^ static_cast<U>(b); }),
+"srl"   , 0b101, 0b0000000, [] (S a, S b) { assert(b > -1); return static_cast<U>(a) >> b; }),
+"sra"   , 0b101, 0b0100000, [] (S a, S b) { assert(b > -1); return a >> b; }),
+"or"    , 0b110, 0b0000000, [] (S a, S b) { return static_cast<U>(a) | static_cast<U>(b); }),
+"and"   , 0b111, 0b0000000, [] (S a, S b) { return static_cast<U>(a) & static_cast<U>(b); }),
 
 ```
 
@@ -411,7 +399,7 @@ alu_32i_r_inst<S, ADDR>(
 
 ```cpp
 "jalr", 0b1100111, 0x0, 0x0, ImmType::I,
-[](Reg<S>& reg, Mem<S, ADDR>& mem, const Args args) {
+[] (Reg<S>& reg, Mem<S, ADDR>& mem, const Args args) {
     reg.write(args.rd, reg.read_pc() + reg.get_pc_offset());
 
     S rs1 = reg.read(args.rs1);
