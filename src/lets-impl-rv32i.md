@@ -759,7 +759,7 @@ background-image: url(https://pbs.twimg.com/media/D5frnDjVUAA0-gz.jpg:large)
 
 * `jalr`, `jal`, `auipc`などの即値を符号拡張しておらず、どっかに吹っ飛んで死んでた
   * 最初原因がわからなかったため、レジスタダンプを手計算ですべて追ってた
-  * 途中計算があっているのに、junpアドレスがおかしいので`jalr`を疑い出す
+  * 途中計算があっているのに、jumpアドレスがおかしいので`jalr`を疑い出す
   * `$ gcc -S`で吐いたdisassebleが`jalr -96(a3)`で、負数で気がついた
 ---
 
@@ -789,4 +789,4 @@ background-image: url(https://pbs.twimg.com/media/D5frnDjVUAA0-gz.jpg:large)
 
 class: impact
 
-## Fin
+## Fin.
