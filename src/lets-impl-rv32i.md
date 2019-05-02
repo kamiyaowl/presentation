@@ -193,7 +193,7 @@ vector<Inst<DATA, ADDR>> filter_op;
 std::copy_if(
   instructions.begin(), instructions.end(),
   std::back_inserter(filter_op),
-  [&opcode](const Inst<DATA, ADDR>& i) {
+  [&opcode] (const Inst<DATA, ADDR>& i) {
     return opcode == i.opcode;
   }
 );
