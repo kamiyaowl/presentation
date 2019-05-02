@@ -1,5 +1,6 @@
 <!-- start_presentation_list -->
-* [Backslide Sample Presentation](https://kamiyaowl.github.io/presentation/dist/presentation.html) *[(.pdf download)](https://kamiyaowl.github.io/presentation/pdf/presentation.pdf)*
+* [RISC-Vを実装してみる](https://kamiyaowl.github.io/presentation/dist/lets-impl-rv32i.html)
+* [Backslide Sample Presentation](https://kamiyaowl.github.io/presentation/dist/presentation.html)
 <!-- end_presentation_list -->
 
 # 内容の誤りについて
@@ -33,6 +34,8 @@
 * [blog](https://kamiyaowl.github.io/blog/)
 * [kamiyaowl - Github](https://github.com/kamiyaowl)
 * [kamiyaowl/presentation](https://github.com/kamiyaowl/presentation)
+
+
 
 
 

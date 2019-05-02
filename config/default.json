@@ -3,5 +3,5 @@
     "readmePath" : "README.md",
     "startTag" : "<!-- start_presentation_list -->",
     "endTag"   : "<!-- end_presentation_list -->",
-    "insertTextFormat" : "* [<TITLE>](<HTML_URL>) *[(.pdf download)](<PDF_URL>)*"
+    "insertTextFormat" : "* [<TITLE>](<HTML_URL>)"
 }

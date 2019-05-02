@@ -21,8 +21,11 @@ class: impact
 
 * rv32iのエミュレータをc++で書きました
   * https://github.com/kamiyaowl/rv32i-sim
+  * Close Issueに人間デバッガのメモが残されています...
+* ~~出力が地味なので~~成果物として仕様と実装について書き留めておきます
+ * 実装時系列で書いているのでまとまりがない点はご容赦ください
 
-![preview](https://camo.githubusercontent.com/d5c09b95671b83d619b1bcde82b4384dc38557b3/68747470733a2f2f7062732e7477696d672e636f6d2f6d656469612f44356834516d755773414d484f486a2e6a70673a6c61726765)
+![preview](https://raw.githubusercontent.com/kamiyaowl/presentation/master/src/assets/riscv-output.png)
 
 ---
 
@@ -68,6 +71,7 @@ Cで書いたコードのコンパイル生成物を実行する
 class: impact
 
 ## レジスタの実装
+### まずはどんなレジスタを持っているか確認
 
 ---
 
@@ -122,7 +126,7 @@ void incr_pc();
 class: impact
 
 ## 命令デコーダの実装
-
+### どんな命令があるのか、どうやって見分けるのか
 ---
 
 # 命令デコーダ>形式
@@ -239,6 +243,7 @@ int32_t convert_signed(uint32_t imm, size_t bit_width)
 class: impact
 
 ## 命令の実装
+### 実際の演算はどうなってるか
 
 ---
 
@@ -360,7 +365,7 @@ return Inst<DATA, ADDR>(
 
 # 命令>実装
 
-先程のラップした関数で、同一`opcode`の命令を実装。`instructions`として定義
+先の共通関数で同一`opcode`の命令を実装。全て集めて`instructions`として定義
 
 ```cpp
 using S    = int32_t;
@@ -379,7 +384,7 @@ alu_32i_r_inst<S, ADDR>(
 
 # 命令>実装
 
-そして`funct3/7`で量産します。(uintの明示が必要なところは`static_cast<U>`で)
+同じ手順で他の命令も作成(uintの明示が必要なところは`static_cast<U>`で)
 
 ```cpp
 "add"   , 0b000, 0b0000000, [](S a, S b) { return a + b; }),
@@ -418,15 +423,372 @@ alu_32i_r_inst<S, ADDR>(
 
 class: impact
 
-## 他
-### Mem, ELF Loader, バイナリ生成など
+## Mem
+### rv32iとして実装すべきところはもう終わった...
+
+---
+
+# Mem>実装
+
+`std::map<uint32_t, int32_t>`で書き込まれたデータを返すようにした
+
+```cpp
+class Mem {
+    private:
+        std::map<ADDR, uint8_t> mem;
+    public:
+        DATA read_byte(ADDR addr) {
+            if (mem.count(addr) == 0) {
+                sim::log::warn("[MEM] uninitialized mem access at %08x\n", addr);
+                mem[addr] = 0xa5; // 本来ランダム初期化されるので
+            }
+            return mem[addr];
+        }
+```
+---
+
+# Mem>実装
+
+Mapに追記するだけ。UartTxバッファに書き込みがあった場合は即時stdoutする。
+
+```cpp
+const ADDR UART_PERIPHERAL_BASE_ADDR = 0x10000000;
+const ADDR UART_PERIPHERAL_SIZE      = 0x00000001;
+void write_byte(ADDR addr, DATA data) {
+    mem[addr] = data & 0xff;
+    // UART
+    if (this->UART_PERIPHERAL_BASE_ADDR <= addr && 
+        (addr < this->UART_PERIPHERAL_BASE_ADDR 
+                + this->UART_PERIPHERAL_SIZE)) {
+        sim::log::uart(static_cast<char>(mem[addr]));
+    }
+}
+
+```
+
+---
+
+class: impact
+
+## ELF Loader
+### バイナリを変換して読み込むのは不格好なので作ってみた
+---
+
+# ELF Loader>やるべきこと
+
+* ELF形式のファイル (`readelf`か`objdump`が便利)
+  * 頭はELF Header, Program Header, Section Headerで構成されている
+  * 先頭の`7f 45 4c 46`はマジックナンバー、書式チェックに使える
+
+
+--
+
+* ~~Mem周りの実装が適当なので、~~Sectionは気にせずProgram Headerに着目
+  * ***LOAD指定された領域を、指定通りのvaddrに読み込んであげる***
+  * ***エントリポイントのvaddrを控え、起動時のpcに設定***
+
+
+--
+
+どんな情報が得られるか`$ riscv32-unknown-elf-readelf -a`してみる
+---
+
+# ELF Loader> Header
+
+```
+ELF Header:
+  Magic:   7f 45 4c 46 01 01 01 00 00 00 00 00 00 00 00 00 
+  Class:                             ELF32
+  Data:                              2's complement, little endian
+  Version:                           1 (current)
+  OS/ABI:                            UNIX - System V
+  ABI Version:                       0
+  Type:                              EXEC (Executable file)
+  Machine:                           RISC-V
+  Version:                           0x1
+  Entry point address:               0x10074
+  Start of program headers:          52 (bytes into file)
+  Start of section headers:          4632 (bytes into file)
+```
+
+---
+
+# ELF Loader> Header
+
+```
+  Flags:                             0x0
+  Size of this header:               52 (bytes)
+  Size of program headers:           32 (bytes)
+  Number of program headers:         2
+  Size of section headers:           40 (bytes)
+  Number of section headers:         14
+  Section header string table index: 13
+```
+* ***Entry point address***(`e_entry`): 0x10074 ← 探してたやつ
+* Start of program headers(`e_phoff`): 52 ← 探してた
+* Size of program headers(`e_ehsize`): 52
+* Number of program headers(`e_phnum`): 2 ← 領域いくつあるかは大事
 
 ---
 
 
+# ELF Loader> Header読み込み
+
+gnu-toolchainにelf.hで定義されているとおりに読めばいい(RISC-Vに限らず)
+
+```c
+typedef struct elf32_hdr{
+    unsigned char e_ident[EI_NIDENT];
+    Elf32_Half    e_type;
+    Elf32_Half    e_machine;
+    Elf32_Word    e_version;
+    Elf32_Addr    e_entry;
+    Elf32_Off     e_phoff;
+    Elf32_Off     e_shoff;
+    Elf32_Word    e_flags;
+    Elf32_Half    e_ehsize;
+    ...
+```
+
 ---
 
-# 引用
+# ELF Loader> Header読み込み
+
+`std::ifstream`で順番に読み出すだけなので、特筆することはなさそう
+
+```c
+std::ifstream ifs(elf_path, ifstream::in | ifstream::binary);
+
+Elf32_Ehdr hdr = {};
+ifs.read((char*)(&hdr.e_ident[0]),  EI_NIDENT);
+ifs.read((char*)(&hdr.e_type),      sizeof(hdr.e_type));
+ifs.read((char*)(&hdr.e_machine),   sizeof(hdr.e_machine));
+ifs.read((char*)(&hdr.e_version),   sizeof(hdr.e_version));
+...
+assert(hdr.e_ident[0] == 0x7f);
+assert(hdr.e_ident[1] == 'E');
+assert(hdr.e_ident[2] == 'L');
+...
+```
+
+
+---
+# ELF Loader> Program Header
+
+`e_phnum`で指定した数だけ、以下のエントリが連続して記述されている。
+
+```c
+typedef struct elf32_phdr{
+    Elf32_Word    p_type;   // 領域の種類(ロード可能, 動的リンク, 補足等...)
+    Elf32_Off     p_offset; // セグメント先頭へのファイル先頭からのオフセット
+    Elf32_Addr    p_vaddr;  // メモリ上の仮想アドレス
+    Elf32_Addr    p_paddr;  // 物理アドレスとして予約されている→使わない
+    Elf32_Word    p_filesz; // セグメントのファイルイメージのバイト数
+    Elf32_Word    p_memsz;  // 仮想メモリイメージでのバイト数→filesz使うので不問
+    Elf32_Word    p_flags;  // 領域の読み書き実行(X/W/R)のフラグ
+    Elf32_Word    p_align;  // セグメントのアライン
+} Elf32_Phdr;
+```
+---
+# ELF Loader> Program Header
+
+* ~~動的リンクはさておき~~以下のデータが対応するように読み込んであげる
+* ELFファイルの読み取り領域
+  * Offset(`p_offset`)
+  * Offset(`p_offset`) + FileSiz(`p_filesz`)
+* Memへの展開先
+  * VirtAddr(`p_vaddr`)
+  * VirtAddr(`p_vaddr`) + MemSiz(`p_memsz`) 
+
+```
+Program Headers:
+  Type Offset   VirtAddr   PhysAddr   FileSiz MemSiz  Flg Align
+  LOAD 0x000000 0x00010000 0x00010000 0x00680 0x00680 R E 0x1000
+  LOAD 0x000680 0x00011680 0x00011680 0x00444 0x00460 RW  0x1000
+```
+
+---
+# ELF Loader> Program Header実装
+
+`std::seekg`を使って指定領域を読み出して、Memに書き込むCallbackを叩く
+
+```cpp
+if (phdr.p_type == 1) { // PT_LOAD
+    auto current = ifs.tellg();
+    ifs.seekg(phdr.p_offset, std::ifstream::beg);
+    // Callbackの実装がしょぼいのでがんばって1byteずつ読むよ...
+    for(int i = 0 ; i < phdr.p_filesz ; ++i) {
+        char buf;
+        ifs.read(&buf, 1);
+        write(phdr.p_vaddr + i, static_cast<uint8_t>(buf));
+    }
+    ifs.seekg(current, std::ifstream::beg);
+}
+```
+
+---
+# ELF Loader> Section Header[参考]
+
+人力gdbするときにめっちゃ見た。直接バイナリ追うほうがメインだったけど
+
+```
+Idx Name          Size      VMA       LMA       File off  Algn
+  0 .text         000005fc  00010074  00010074  00000074  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, CODE
+  1 .rodata       00000010  00010670  00010670  00000670  2**2
+                  CONTENTS, ALLOC, LOAD, READONLY, DATA
+  2 .eh_frame     00000004  00011680  00011680  00000680  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  3 .init_array   00000004  00011684  00011684  00000684  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+```
+---
+
+# ELF Loader> Section Header[参考]
+
+
+```
+Idx Name          Size      VMA       LMA       File off  Algn
+  4 .fini_array   00000004  00011688  00011688  00000688  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  5 .data         00000428  00011690  00011690  00000690  2**3
+                  CONTENTS, ALLOC, LOAD, DATA
+  6 .sdata        0000000c  00011ab8  00011ab8  00000ab8  2**2
+                  CONTENTS, ALLOC, LOAD, DATA
+  7 .bss          0000001c  00011ac4  00011ac4  00000ac4  2**
+```
+
+---
+
+class: impact
+
+## 完成
+### 細かいところは実装を参考にしてください...
+---
+
+class: impact
+
+## 動かしてみる
+---
+
+# 動かす>実行するコードの記述
+
+`"Hello RISC-V"`をUART TXバッファに書くコードを作成
+
+```c
+#include <stdint.h>
+
+#define UART_PERIPHERAL_BASE_ADDR (0x10000000)
+
+void uart_tx(const char c) {
+    volatile uint8_t* uartTxPtr = (volatile uint8_t*)UART_PERIPHERAL_BASE_ADDR;
+    // TODO: もし実機を完全に模倣するなら送信バッファFullフラグで待ったりする
+    // TxBufに値を書き込み
+    *uartTxPtr = (uint8_t)c;
+}
+```
+
+---
+
+# 動かす>実行するコードの記述
+
+```c
+void print(const char* str) {
+    for(int i = 0 ; str[i] != '\0' ; ++i) {
+        uart_tx(str[i]);
+    }
+}
+int main(void) {
+    const char* hello = "Hello RISC-V! \n";
+    print(hello);
+
+    return 0;
+}
+```
+
+---
+
+# 動かす>コンパイル
+
+toolchainを何度もconfigureし直していたので、うんざりしてDockerfile作成
+
+```Dockerfile
+FROM ubuntu:18.04
+
+ENV RISCV=/opt/riscv
+ENV PATH=$RISCV/bin:$PATH
+WORKDIR $RISCV
+
+RUN apt update
+RUN apt install -y autoconf automake autotools-dev curl \
+                   libmpc-dev libmpfr-dev libgmp-dev gawk \
+                   build-essential bison flex texinfo gperf \
+                   libtool patchutils bc zlib1g-dev libexpat-dev
+```
+
+---
+
+# 動かす>コンパイル
+
+内容としては、riscv-gnu-toolchainの手順通りにビルドしているだけ
+
+```Dockerfile
+RUN apt install -y git
+
+RUN git clone --recursive https://github.com/riscv/riscv-gnu-toolchain
+
+RUN cd riscv-gnu-toolchain && ./configure --prefix=/opt/riscv --with-arch=rv32gc --with-abi=ilp32d --enable-multilib && make
+
+WORKDIR /work
+```
+
+---
+# 動かす>コンパイル
+
+dockerコマンドを直で叩きたくない教徒なので、docker-compose.ymlを作成
+
+`$ docker-compose up`でhello.oを作成したら、***いよいよ読み込ませて実行する。***
+
+```yml
+services:
+  riscv-compile:
+    build: .
+    volumes: 
+      - ./:/work
+    command:
+      riscv32-unknown-elf-gcc \
+        -march=rv32i -mabi=ilp32 \
+        -o /work/hello.o /work/hello.c
+```
+
+---
+class: impact
+background-image: url(https://pbs.twimg.com/media/D5frnDjVUAA0-gz.jpg:large)
+
+## 動いた
+
+つらかったところ
+
+* `jalr`, `jal`, `auipc`などの即値を符号拡張しておらず、どっかに吹っ飛んで死んでた
+  * 最初原因がわからなかったため、レジスタダンプを手計算ですべて追ってた
+  * 途中計算があっているのに、junpアドレスがおかしいので`jalr`を疑い出す
+  * `$ gcc -S`で吐いたdisassebleが`jalr -96(a3)`で、負数で気がついた
+---
+
+# まとめ
+
+* RISC-Vは簡単ですごい
+  * エミュレータが1週間ぐらいでできた(半分ぐらいtoolchainのビルドしてた)
+  * いろいろな実装があるので覗いてみると楽しい
+* どう伸びるかわからないけど、**ISA自体は**綺麗にまとまっている
+  * モジュラーISAなので欲しい機能だけ作ればOK(rv32imfd + 独自命令とか)
+  * 関係ないけど学生実験MIPSとかやってたなぁとか思い出した
+* C++わからん
+  * 高まりたい
+
+---
+
+# 引用/参考
 
 * [riscv.org](https://riscv.org/)
 * [riscv/riscv-isa-manual - Github](https://github.com/riscv/riscv-isa-manual)
@@ -434,3 +796,9 @@ class: impact
   * 著: デイビッド・パターソン
   * 著: アンドリュー・ウォーターマン
   * 訳: 成田 光影
+
+---
+
+class: impact
+
+## Fin
