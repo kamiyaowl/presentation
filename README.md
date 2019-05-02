@@ -25,6 +25,8 @@
 1. `$ npm run reset`
 1. `$ npm run build`
 
+`/template`にはGoogle Analyticsのコードが埋め込まれていますが、`npm run reset`で削除されます。
+
 # Link
 
 * [portfolio](https://kamiyaowl.github.io/)
