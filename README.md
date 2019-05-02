@@ -2,6 +2,10 @@
 * [Backslide Sample Presentation](https://kamiyaowl.github.io/presentation/dist/presentation.html) *[(.pdf download)](https://kamiyaowl.github.io/presentation/pdf/presentation.pdf)*
 <!-- end_presentation_list -->
 
+# 内容の誤りについて
+
+お手数おかけ致しますが、[Issue](https://github.com/kamiyaowl/presentation/issues/new)にあげていただけると幸いです。
+
 # Fork me
 
 もし本リポジトリをforkして使用したい場合、スライドの内容を除いて利用することができます。Licenseを以下に示します。
