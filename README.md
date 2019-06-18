@@ -1,4 +1,5 @@
 <!-- start_presentation_list -->
+* [(Chiselを使って)FPGAで動く何かを作った話](https://kamiyaowl.github.io/presentation/dist/chisel-bf.html)
 * [RISC-Vを実装してみる](https://kamiyaowl.github.io/presentation/dist/lets-impl-rv32i.html)
 * [Backslide Sample Presentation](https://kamiyaowl.github.io/presentation/dist/presentation.html)
 <!-- end_presentation_list -->
@@ -34,13 +35,3 @@
 * [blog](https://kamiyaowl.github.io/blog/)
 * [kamiyaowl - Github](https://github.com/kamiyaowl)
 * [kamiyaowl/presentation](https://github.com/kamiyaowl/presentation)
-
-
-
-
-
-
-
-
-
-
