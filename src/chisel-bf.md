@@ -42,22 +42,22 @@ Chiselの紹介と、使ってみた所感についてお話します。
 # FPGAとは
 
 Field Programmable Gate Arrayの略。
---
 **論理回路を書き換え可能なLSI**
 
-.col-6[
+--
 
-何がすごい
+.col-7[
+
+## 何がすごい
 
 * 書き換え可能
-    * (ASICだとMask変更💰)
+    * ASICだとMask変更💰
 * 回路を作れる 
   * CPUではできない並列/高速処理😊
 * **個人で使える**(最高😍)
+  * 安いものなら秋月電子でも600円から
 
 ]
---
-.col-6[
-.right[![Right-aligned image](https://images-na.ssl-images-amazon.com/images/G/01/img15/pet-products/small-tiles/23695_pets_vertical_store_dogs_small_tile_8._CB312176604_.jpg)]
-秋月電子より。なんと600円
+.col-5[
+<img src="https://github.com/kamiyaowl/presentation/blob/master/src/assets/chisel-bf-akizuki.png?raw=true" style="width: 100%"/>
 ]
