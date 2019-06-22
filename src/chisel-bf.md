@@ -75,7 +75,7 @@ Field Programmable Gate Arrayの略。
 .col-4[
 ### コントローラ(はやい)
 <img src="https://pbs.twimg.com/media/ChddWBIUkAU9knO?format=jpg&name=large" style="width: 95%"/>
-* SDRAM->LCD転送HW
+* SDRAM->LCD描画HW
 * DMACみたいな
 ]
 --
@@ -91,6 +91,7 @@ Field Programmable Gate Arrayの略。
 # 開発環境
 
 HDL, Simulationの話
+
 
 ---
 
