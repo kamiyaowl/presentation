@@ -21,7 +21,7 @@ class: impact
 
 Chiselの紹介と、使ってみた所感についてお話します。
 
-* **FPGAに興味があるかもしれない人**
+* .primary[FPGAに興味があるかもしれない人]
   * 何ができるか多めにしました
 * Verilog HDLやVHDLを使ったことがある人
 * Chiselを使ってなにか作ってみたい人
@@ -30,10 +30,11 @@ Chiselの紹介と、使ってみた所感についてお話します。
 
 # Agenda
 
-* FPGAとは
+* 前置き
+  * FPGAとは
+  * 開発について
 * Chiselについて
-* 作ったもの
-* 開発反省
+* 作った話
 * まとめ
 
 ---
@@ -41,7 +42,7 @@ Chiselの紹介と、使ってみた所感についてお話します。
 # What is an FPGA?
 
 Field Programmable Gate Arrayの略。
-**論理回路を書き換え可能なLSI**
+.primary[論理回路を書き換え可能なLSI]
 
 --
 
@@ -88,20 +89,80 @@ Field Programmable Gate Arrayの略。
 
 ---
 
-# 開発環境
+# 作り方
 
-HDL, Simulationの話
+- 方式検討
+  - アイデアとかこねこねする
+--
 
+- 実装
+  - RTL(レジスタ転送レベル)で設計。.primary[HDLで記述]
+    - 流行ってるCとかC++などから変換するのは高位合成と呼ばれている
+--
+- 論理テスト
+  - 正しく動くか試す。.primary[HDLで記述]するかC++に変換してからやったりとか
+--
+
+- 実機テスト
+  - 動けば神
 
 ---
 
-# つらみどころ
+## HDL(ハードウェア記述言語)
 
+
+.col-8[
+```verilog
+module divider(
+    input clk, input rstn, output sig
+);
+reg [7:0] counter;
+assign sig = counter[7];
+always @ (posedge clk) begin
+    if (rstn != 1'b1) begin
+        counter <= 8'x0;
+    end else begin
+        counter <= counter + 8'x1;
+    end
+end
+endmodule
+```
+]
+
+.col-4[
+### 分周器
+
+* 周波数を1/nして出力する
+* Verilog HDLで書いた例
+]
+---
+
+# 記述のつらみ
+
+VHDL, Verilog HDL, SystemVerilogが主流
+
+- プログラミング言語ではない
+  - 透けて見えるのはアセンブラではなくフリップフロップ
+  - .primary[テストを書くのが大変になりがち]
+- 記述の規格が曖昧
+  - VHDLは厳格で冗長すぎるし、Verilogはガバガバ(型チェックとか)
+  - .primary[オブジェクト指向とは]🤔
+
+.small[※個人の感想です]
 ---
 
 # Chiselとは
 
-TPU, RISC-V
+[Chisel](https://chisel.eecs.berkeley.edu/)はScalaでHDLが書ける(組み込みDSL)
+
+.col-6[
+### Edge TPU
+[Google](https://cloud.google.com/edge-tpu/?hl=ja): 推論を行うための専用ASIC
+]
+.col-6[
+### RISC-V実装
+[berkeley.edu](https://bar.eecs.berkeley.edu/): CPU実装
+]
 
 ---
 
@@ -143,3 +204,6 @@ Brainf**k Processor
 class: impact
 
 ## Fin.
+
+
+<script src="mermaid/mermaid.min.js">

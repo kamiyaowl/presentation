@@ -10,6 +10,7 @@
     "build": "node_modules/backslide/bin/bs e src && node_modules/backslide/bin/bs p src && node ./index.js",
     "build:html": "node_modules/backslide/bin/bs e src && node ./index.js",
     "build:pdf": "node_modules/backslide/bin/bs p src && node ./index.js",
+    "bs": "node_modules/backslide/bin/bs",
     "reset": "rm -rf ./dist && rm -rf ./pdf && rm -rf ./template && rm -rf ./src && mkdir ./src && node_modules/backslide/bin/bs init --template && mv ./presentation.md ./src/presentation.md"
   },
   "repository": {
