@@ -132,7 +132,7 @@ endmodule
 .col-4[
 ### 分周器
 
-* 周波数を1/nして出力する
+* 周波数を1/(2^n)して出力
 * Verilog HDLで書いた例
 ]
 ---
@@ -153,47 +153,88 @@ VHDL, Verilog HDL, SystemVerilogが主流
 
 # Chiselとは
 
-[Chisel](https://chisel.eecs.berkeley.edu/)はScalaでHDLが書ける(組み込みDSL)
+[Chisel](https://chisel.eecs.berkeley.edu/)はScalaでHDLが書ける(組み込みDSL)。Verilog HDLにTranslateできる。
 
 .col-6[
 ### Edge TPU
-[Google](https://cloud.google.com/edge-tpu/?hl=ja): 推論を行うための専用ASIC
+<img src="https://github.com/kamiyaowl/presentation/blob/master/src/assets/chisel-bf-tpu.png?raw=true" style="width: 95%"/>
 ]
 .col-6[
 ### RISC-V実装
-[berkeley.edu](https://bar.eecs.berkeley.edu/): CPU実装
+<img src="https://github.com/kamiyaowl/presentation/blob/master/src/assets/chisel-bf-ucb.png?raw=true" style="width: 95%"/>
 ]
 
 ---
 
-# Scala
+# Chiselの構文
 
+.col-8[
+```scala
+class Counter(width: UInt) {
+    val io = IO(new Bundle {
+        val dout = Output(Bool())
+    })
+    val counter = RegInit(UInt(width.U), 0.U)
+    io.dout <> counter(7).B
+    counter := counter + 1.U
+}
+```
+]
+
+.col-4[
+### 分周器
+
+* scalaの値がマクロになる
+  * widthとかifとか
+* 値の集合をBundleで定義
+  * 共通化できる
+* 同期回路前提
+* Scalaのままテスト可
+]
 
 ---
 
-# 構文比較
+class: impact
+
+## つくったもの
+Brainf**k言語処理系 on FPGA
 
 ---
 
-# つくったもの
+# BF処理系
 
-Brainf**k Processor
+- `>`, `<` データのポインタをincrement/decrement
+- `+`, `-` データをincrement/decrement
+- `,` 入力値をデータに上書き
+- `.` データを出力(putchar相当)
+- `[`, `]` branch(while文相当) 
+--
 
----
-
-# bfをc言語で書くと
+- "Hello World!"
+  - .small[`">+++++++++[<++++++++>-]<.>+++++++[<++++>-]<+.+++++++..+++.[-]>++++++++[<++++>-]<.>+++++++++++[<+++++>-]<.>++++++++[<+++>-]<.+++.------.--------.[-]>++++++++[<++++>-]<+.[-]++++++++++."`]
 
 ---
 
 # 全体設計
 
+TODO: 構成図
 ---
 
 # いい感じコード紹介
 
 ---
 
+# 単体テスト
+
+---
+
+# 連結テスト
+
+---
+
 # できた
+
+FPGAに書き込んで動かしてみる
 
 ---
 
