@@ -290,15 +290,49 @@ Brainf**k言語処理系 on FPGA
 
 ---
 
-
 # できた
 
-FPGAに書き込んで動かしてみる
+Verilog HDLで出力できるので、FPGAに書き込んで動かしてみる
+
+.col-6[
+<img src="https://reference.digilentinc.com/_media/reference/programmable-logic/arty/arty-0.png" style="width: 90%"/>
+]
+.col-6[
+## ボード
+
+* Digilent Arty A7
+* Xilinx XC7A35Tが乗ってる
+* 贅沢なのでLE(リソース) 死ぬほど余った
+]
+
+---
+
+## 開発環境(Vivado)でちょちょいとすると
+
+.col-12[
+<img src="https://pbs.twimg.com/media/D2f9vlBUgAE3grK.jpg" style="width: 90%"/>
+]
+
+---
+class: impact
+background-image: url(https://user-images.githubusercontent.com/4300987/55052799-7c7a7b00-509d-11e9-995d-fb8071305202.gif)
+
+## .primary[うごいた！]
 
 ---
 
 # まとめ
 
+- .primary[Chisel楽しい]
+  - FPGA楽しい、処理系自作楽しい
+--
+
+- 同期回路前提の記述なので迂闊なバグを作り込みにくい
+  - もちろんInter-Clock Path用の構文もある
+--
+
+- ScalaとHDL設計、両方のスキルセットを持った人ってあまりいないんじゃ...
+  - .primary[どちらかを知っていれば大丈夫そう]
 ---
 
 class: impact
