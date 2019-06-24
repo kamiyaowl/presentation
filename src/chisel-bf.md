@@ -224,17 +224,72 @@ Brainf**k言語処理系 on FPGA
 
 ---
 
-# いい感じコード紹介
+# コード例: Processor
+
+.col-8[
+<img src="https://github.com/kamiyaowl/presentation/blob/master/src/assets/chisel-bf-code.png?raw=true" style="width: 120%"/>
+]
+.col-4[
+## 命令デコーダ
+* BFのコードを読んで実行
+
+### いいところ
+
+* 同期回路前提
+  * 見通しがいい
+* 型がはっきりしている
+  * 曖昧だとエラー
+]
 
 ---
 
-# 単体テスト
+# コード例: Unit Test
+
+.col-8[
+<img src="https://github.com/kamiyaowl/presentation/blob/master/src/assets/chisel-bf-test-1.png?raw=true" style="width: 120%"/>
+]
+.col-4[
+## UART送受信
+* タイミング生成
+* データ送受
+
+### いいところ
+
+* Scalaでテストが書ける
+  * コード補完が効く
+* デバッグ可
+]
+
 
 ---
 
-# 連結テスト
+# コード例: 結合テスト(1/2)
+
+<img src="https://github.com/kamiyaowl/presentation/blob/master/src/assets/chisel-bf-test-3.png?raw=true" style="width: 120%"/>
 
 ---
+
+# コード例: 結合テスト(2/2)
+
+.col-8[
+<img src="https://github.com/kamiyaowl/presentation/blob/master/src/assets/chisel-bf-test-2.png?raw=true" style="width: 95%"/>
+]
+.col-4[
+
+## run()
+
+* 文字列をMEMにロード
+* haltするまでクロック供給
+* 期待値検査
+
+### いいところ
+
+* テストの関数/クラス化
+  * 見通しがいい
+]
+
+---
+
 
 # できた
 
