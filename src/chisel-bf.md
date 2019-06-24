@@ -217,7 +217,11 @@ Brainf**k言語処理系 on FPGA
 
 # 全体設計
 
-TODO: 構成図
+- PCとはUARTで通信してプログラムの書き換えができるようにする
+- プロセッサの動作を止めないようにFIFOを入れる
+
+<img src="https://github.com/kamiyaowl/presentation/blob/master/src/assets/chisel-bf-arch.png?raw=true" style="width: 95%"/>
+
 ---
 
 # いい感じコード紹介
