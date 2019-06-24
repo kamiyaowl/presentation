@@ -120,9 +120,9 @@ reg [7:0] counter;
 assign sig = counter[7];
 always @ (posedge clk) begin
     if (rstn != 1'b1) begin
-        counter <= 8'x0;
+        counter <= 8'h0;
     end else begin
-        counter <= counter + 8'x1;
+        counter <= counter + 8'h1;
     end
 end
 endmodule
@@ -175,7 +175,7 @@ class Counter(width: UInt) {
         val dout = Output(Bool())
     })
     val counter = RegInit(UInt(width.U), 0.U)
-    io.dout <> counter(7).B
+    io.dout <> counter(7)
     counter := counter + 1.U
 }
 ```
