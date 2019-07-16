@@ -6,12 +6,11 @@
   "scripts": {
     "clean": "rm -rf ./dist && rm -rf ./pdf",
     "index": "node ./index.js",
-    "serve": "node_modules/backslide/bin/bs s src",
-    "build": "node_modules/backslide/bin/bs e src && node_modules/backslide/bin/bs p src && node ./index.js",
-    "build:html": "node_modules/backslide/bin/bs e src && node ./index.js",
-    "build:pdf": "node_modules/backslide/bin/bs p src && node ./index.js",
-    "bs": "node_modules/backslide/bin/bs",
-    "reset": "rm -rf ./dist && rm -rf ./pdf && rm -rf ./template && rm -rf ./src && mkdir ./src && node_modules/backslide/bin/bs init --template && mv ./presentation.md ./src/presentation.md"
+    "serve": "bs s src",
+    "build": "bs e src && bs p src && node ./index.js",
+    "build:html": "bs e src && node ./index.js",
+    "build:pdf": "bs p src && node ./index.js",
+    "reset": "rm -rf ./dist && rm -rf ./pdf && rm -rf ./template && rm -rf ./src && mkdir ./src && bs init --template && mv ./presentation.md ./src/presentation.md"
   },
   "repository": {
     "type": "git",

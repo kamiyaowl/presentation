@@ -1,7 +1,7 @@
 <!-- start_presentation_list -->
-* [(Chiselを使って)FPGAで動く何かを作った話](https://kamiyaowl.github.io/presentation/dist/chisel-bf.html)
-* [RISC-Vを実装してみる](https://kamiyaowl.github.io/presentation/dist/lets-impl-rv32i.html)
-* [Backslide Sample Presentation](https://kamiyaowl.github.io/presentation/dist/presentation.html)
+* [(Chiselを使って)FPGAで動く何かを作った話](https://kamiyaowl.github.io/presentation/dist/chisel-bf.html) ([.pdf](https://kamiyaowl.github.io/presentation/pdf/chisel-bf.pdf))
+* [RISC-Vを実装してみる](https://kamiyaowl.github.io/presentation/dist/lets-impl-rv32i.html) ([.pdf](https://kamiyaowl.github.io/presentation/pdf/lets-impl-rv32i.pdf))
+* [Backslide Sample Presentation](https://kamiyaowl.github.io/presentation/dist/presentation.html) ([.pdf](https://kamiyaowl.github.io/presentation/pdf/presentation.pdf))
 <!-- end_presentation_list -->
 
 # 内容の誤りについて
@@ -35,6 +35,8 @@
 * [blog](https://kamiyaowl.github.io/blog/)
 * [kamiyaowl - Github](https://github.com/kamiyaowl)
 * [kamiyaowl/presentation](https://github.com/kamiyaowl/presentation)
+
+
 
 
 
